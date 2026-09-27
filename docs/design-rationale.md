@@ -1,58 +1,54 @@
-# Design Rationale: Chess Position Analysis
+# Design rationale
 
-## 1. The problem
+## 1. Problem
 
-My program analyses chess positions. A position comes in as a FEN string and the user gets a report about it. There are two things that change independently:
+My program analyses chess positions. The user gives a position as a FEN string and gets a report about it
 
-- **What kind of report** the user wants. `ScoreReport` gives a short score line. `CoachReport` gives a verdict and advice that depends on the phase of the game.
-- **Which engine** evaluates the position. `PositionalEngine` looks at development and the center, so it fits the opening. `MaterialEngine` counts pieces, which is enough for the middlegame. For endgames the chess club already has an old engine, `DosChessEngine`, which knows about king activity. This is legacy code: I am not allowed to change it.
+There are two things that can change separately. The first one is the type of report: ScoreReport shows a short score, CoachReport says who is better and gives advice for the current phase of the game. The second one is the engine that evaluates the position: PositionalEngine for the opening, MaterialEngine for the middlegame and an old engine DosChessEngine for the endgame. DosChessEngine is legacy code that I am not allowed to change
 
-Without a pattern I would need a class for every pair: `ScoreReportWithMaterial`, `CoachReportWithDos` and so on. 2 reports × 3 engines = 6 classes, and every new report or engine adds several more.
+If I made a class for every pair (ScoreReportWithMaterial, CoachReportWithDos and so on) I would get 2 x 3 = 6 classes, and every new report or engine would add even more
 
-## 2. The design
+## 2. Design
 
-**Bridge.** `PositionReport` is the Abstraction. It has a `protected final ChessEngine engine` and knows only this interface. `ScoreReport` and `CoachReport` are Refined Abstractions. `ChessEngine` is the Implementor with `name()` and `evaluate(Position, int depth)`. It returns an `Evaluation` (score in centipawns from White's side) and reports problems only with `EngineException` and its two subclasses, `InvalidPositionException` and `EngineTimeoutException`. The implementors are `MaterialEngine`, `PositionalEngine` and `DosEngineAdapter`.
+Bridge: PositionReport is the abstraction. It keeps a ChessEngine in a field and knows only this interface. ScoreReport and CoachReport are refined abstractions. ChessEngine is the implementor with two methods, name() and evaluate(Position, int depth). It returns an Evaluation (score in centipawns from the white side) and when something goes wrong it throws EngineException or one of its subclasses, InvalidPositionException and EngineTimeoutException. MaterialEngine, PositionalEngine and DosEngineAdapter are the implementations
 
-**Adapter.** `DosEngineAdapter implements ChessEngine` and wraps a `DosChessEngine` object. It converts the input, calls the legacy method, converts the result back, and translates every error code into an exception from the contract.
+Adapter: DosEngineAdapter implements ChessEngine and wraps a DosChessEngine object. It converts the position into the old format, calls the old method, converts the answer back and turns error codes into exceptions
 
-**Complexity module: dynamic implementor selection.** `PhaseRoutingEngine` is also a `ChessEngine`. It holds a `Map<GamePhase, ChessEngine>` and on every call asks the position for its phase (`Position.phase()` looks at the number of pieces and the move number) and delegates to the engine for that phase. So the engine is chosen from the input itself. The client (`App`) builds the map once and never decides which engine evaluates which position. Endgame positions go to the adapted legacy engine automatically.
+Complexity module: I chose dynamic implementor selection. PhaseRoutingEngine is also a ChessEngine. It keeps a map from GamePhase to ChessEngine, and on every call it asks the position for its phase and gives the work to the engine for that phase. The phase is calculated from the input itself (number of pieces and move number), so the client never says which engine to use. Endgames go to the adapted legacy engine automatically
 
-## 3. Why one pattern alone is not enough
+## 3. Why one pattern is not enough
 
-- **Bridge alone** needs every implementor to implement `ChessEngine`. `DosChessEngine` does not and I cannot edit it, so it could not be plugged into the bridge.
-- **Adapter alone** would make the legacy engine usable, but the reports would still be tied to concrete engines. Every new report type would have to be written again for each engine, which is the class explosion from section 1.
+Bridge alone is not enough because every implementation has to implement ChessEngine, and DosChessEngine does not. I cannot change its code, so without an adapter it could not be used in the bridge
 
-Bridge separates the two hierarchies, and Adapter lets the one incompatible class join the Implementor side without touching its code.
+Adapter alone is not enough because the legacy engine would work, but the reports would still be connected to concrete engines. Every new report would have to be written again for every engine
 
-## 4. Why `DosChessEngine` is genuinely incompatible
+So Bridge splits reports and engines into two separate hierarchies, and Adapter lets the old incompatible class join the engine side without changing it
 
-| | `ChessEngine` contract | `DosChessEngine` |
-|---|---|---|
-| Method | `evaluate(Position, int depth)` | `think(int plies, char[] board, boolean blackToMove)` |
-| Parameter order | position first, depth second | depth first, board second |
-| Depth unit | full moves | plies (half-moves), so the adapter multiplies by 2 |
-| Board type | `Position` object | `char[64]` from a8 to h1, `'.'` for an empty square |
-| Result | `Evaluation` from White's side | raw `int` from the side to move, so the adapter flips the sign when Black is to move |
-| Failure | throws `EngineException` subclasses | returns the sentinel `NO_SCORE = -32000` and keeps an error code in `getLastError()` |
+## 4. Why DosChessEngine is really incompatible
 
-The adapter translates the failures like this, so nothing legacy-specific reaches the reports:
+- the method has another name and signature: think(int plies, char[] board, boolean blackToMove) instead of evaluate(Position position, int depth)
+- the parameter order is different: depth comes first, board second
+- depth is counted in plies (half-moves), so the adapter multiplies the depth by 2
+- the board is a char[64] from a8 to h1 with '.' for empty squares, not a Position object
+- the result is a plain int from the side that moves, not an Evaluation from the white side, so the adapter changes the sign when black is to move
+- it does not throw exceptions. On error it returns NO_SCORE = -32000 and saves an error code that you read with getLastError()
 
-| Legacy error code | Exception thrown by the adapter |
-|---|---|
-| `ERR_ILLEGAL_BOARD` | `InvalidPositionException` ("the position is not legal") |
-| `ERR_NO_KING` | `InvalidPositionException` (same message as the native engines) |
-| `ERR_OUT_OF_TIME` | `EngineTimeoutException` |
-| any other code | plain `EngineException`, the code is not included in the message |
+The adapter translates the error codes like this:
 
-The adapter also fails if the error code is set when the score looks normal, so a bad result can never pass as a real score.
+- ERR_ILLEGAL_BOARD -> InvalidPositionException ("position is not legal")
+- ERR_NO_KING -> InvalidPositionException (same message as the other engines)
+- ERR_OUT_OF_TIME -> EngineTimeoutException
+- any other code -> EngineException, the code itself is not shown in the message
 
-## 5. Open/Closed on both axes
+The adapter also throws if the error code is set but the score looks normal, so a wrong result never gets to the reports. The reports and App never use DosChessEngine, its constants or its error codes
 
-- **New report:** extend `PositionReport` and implement `build()`. No engine class changes.
-- **New engine:** implement `ChessEngine` and put it into the map in `App.createEngine()`. No report class and no router code changes.
+## 5. Open/Closed principle
 
-`OpenClosedTest` shows both: it adds a new report and a new engine inside the test and uses them with the existing classes.
+- to add a new report I extend PositionReport and write build(), the engines do not change
+- to add a new engine I implement ChessEngine and put it in the map in App.createEngine(), the reports and the router do not change
+
+OpenClosedTest checks both cases: it makes a new report and a new engine inside the test and uses them with the existing classes
 
 ## 6. Limitation
 
-The router picks exactly one engine per phase and has no fallback. If the chosen engine fails, for example the legacy engine times out at a high depth, the report fails too, even though another engine could have given an answer.
+The router uses exactly one engine for each phase and has no fallback. If that engine fails, for example the legacy engine runs out of time at a big depth, the whole report fails, even though another engine could give an answer
