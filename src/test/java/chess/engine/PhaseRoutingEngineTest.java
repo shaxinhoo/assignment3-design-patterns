@@ -46,7 +46,7 @@ class PhaseRoutingEngineTest {
                 GamePhase.MIDDLEGAME, middlegame,
                 GamePhase.ENDGAME, new DosEngineAdapter(new DosChessEngine())));
 
-        assertEquals("DosChess (legacy)", real.evaluate(Positions.ENDGAME_BLACK_TO_MOVE, 2).engineName());
+        assertEquals("dos legacy", real.evaluate(Positions.ENDGAME_BLACK_TO_MOVE, 2).engineName());
     }
 
     @Test

@@ -25,7 +25,7 @@ public class StubEngine implements ChessEngine {
     }
 
     public static StubEngine failing(EngineException failure) {
-        return new StubEngine("Failing", 0, failure);
+        return new StubEngine("failing", 0, failure);
     }
 
     @Override

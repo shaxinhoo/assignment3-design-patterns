@@ -15,7 +15,7 @@ public class ScoreReport extends PositionReport {
     @Override
     public String build(Position position) {
         Evaluation evaluation = engine.evaluate(position, DEPTH);
-        return "Score " + evaluation.formattedScore() + ", " + evaluation.verdict()
-                + " [" + evaluation.engineName() + "]";
+        return "score: " + evaluation.formattedScore() + ", " + evaluation.verdict()
+                + " (" + evaluation.engineName() + ")";
     }
 }

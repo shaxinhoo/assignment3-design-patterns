@@ -25,11 +25,11 @@ public final class Position {
 
     public static Position fromFen(String fen) {
         if (fen == null) {
-            throw new IllegalArgumentException("FEN is missing");
+            throw new IllegalArgumentException("fen is missing");
         }
         String[] fields = fen.trim().split("\\s+");
         if (fields.length != FEN_FIELDS) {
-            throw new IllegalArgumentException("FEN must have " + FEN_FIELDS + " fields: " + fen);
+            throw new IllegalArgumentException("fen must have " + FEN_FIELDS + " fields: " + fen);
         }
         return new Position(fen.trim(), parseBoard(fields[0]), parseSide(fields[1]), parseMoveNumber(fields[5]));
     }
@@ -96,7 +96,7 @@ public final class Position {
     private static char[][] parseBoard(String placement) {
         String[] ranks = placement.split(RANK_SEPARATOR);
         if (ranks.length != BOARD_SIZE) {
-            throw new IllegalArgumentException("Board must have " + BOARD_SIZE + " ranks: " + placement);
+            throw new IllegalArgumentException("board must have " + BOARD_SIZE + " ranks: " + placement);
         }
         char[][] board = new char[BOARD_SIZE][];
         for (int i = 0; i < BOARD_SIZE; i++) {
@@ -117,11 +117,11 @@ public final class Position {
             } else if (PIECE_LETTERS.indexOf(symbol) >= 0 && file < BOARD_SIZE) {
                 row[file++] = symbol;
             } else {
-                throw new IllegalArgumentException("Bad rank: " + rank);
+                throw new IllegalArgumentException("bad rank: " + rank);
             }
         }
         if (file != BOARD_SIZE) {
-            throw new IllegalArgumentException("Rank must have " + BOARD_SIZE + " squares: " + rank);
+            throw new IllegalArgumentException("rank must have " + BOARD_SIZE + " squares: " + rank);
         }
         return row;
     }
@@ -133,18 +133,18 @@ public final class Position {
         if (side.equals("b")) {
             return false;
         }
-        throw new IllegalArgumentException("Side to move must be w or b: " + side);
+        throw new IllegalArgumentException("side to move must be w or b: " + side);
     }
 
     private static int parseMoveNumber(String field) {
         try {
             int number = Integer.parseInt(field);
             if (number < 1) {
-                throw new IllegalArgumentException("Move number must be positive: " + field);
+                throw new IllegalArgumentException("move number must be positive: " + field);
             }
             return number;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Move number is not a number: " + field);
+            throw new IllegalArgumentException("move number is not a number: " + field);
         }
     }
 }

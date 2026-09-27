@@ -40,7 +40,7 @@ class DosEngineAdapterTest {
         Evaluation evaluation = new DosEngineAdapter(legacy).evaluate(Positions.ENDGAME_WHITE_TO_MOVE, 2);
 
         assertEquals(120, evaluation.centipawns());
-        assertEquals("DosChess (legacy)", evaluation.engineName());
+        assertEquals("dos legacy", evaluation.engineName());
     }
 
     @Test

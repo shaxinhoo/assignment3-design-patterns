@@ -32,7 +32,7 @@ class OpenClosedTest {
 
         @Override
         public String name() {
-            return "Drawish";
+            return "drawish";
         }
 
         @Override
@@ -45,7 +45,7 @@ class OpenClosedTest {
     void newReportWorksWithExistingEngines() {
         PositionReport report = new WhoIsBetterReport(new MaterialEngine());
 
-        assertEquals("Black is winning", report.build(Positions.MIDDLEGAME));
+        assertEquals("black is winning", report.build(Positions.MIDDLEGAME));
     }
 
     @Test
@@ -55,7 +55,7 @@ class OpenClosedTest {
                 GamePhase.MIDDLEGAME, new MaterialEngine(),
                 GamePhase.ENDGAME, new DrawishEngine()));
 
-        assertEquals("Score +0.00, the position is equal [Drawish]",
+        assertEquals("score: +0.00, position is equal (drawish)",
                 new ScoreReport(router).build(Positions.ENDGAME_WHITE_TO_MOVE));
     }
 }

@@ -13,11 +13,11 @@ class CoachReportTest {
 
     @Test
     void delegatesToEngineAndGivesEndgameAdvice() {
-        StubEngine engine = StubEngine.returning("Stub", -350);
+        StubEngine engine = StubEngine.returning("stub", -350);
 
         String text = new CoachReport(engine).build(Positions.ENDGAME_BLACK_TO_MOVE);
 
-        assertEquals("Coach: Black is winning. Black to move, activate your king and push passed pawns. [Stub]", text);
+        assertEquals("coach: black is winning, black to move, activate your king and push passed pawns (stub)", text);
         assertEquals(1, engine.calls());
         assertSame(Positions.ENDGAME_BLACK_TO_MOVE, engine.lastPosition());
         assertEquals(CoachReport.DEPTH, engine.lastDepth());
@@ -25,12 +25,12 @@ class CoachReportTest {
 
     @Test
     void givesOpeningAdviceForTheStartPosition() {
-        StubEngine engine = StubEngine.returning("Stub", 20);
+        StubEngine engine = StubEngine.returning("stub", 20);
 
         String text = new CoachReport(engine).build(Positions.START);
 
-        assertEquals("Coach: the position is equal. White to move, "
-                + "develop knights and bishops, fight for the center and castle. [Stub]", text);
+        assertEquals("coach: position is equal, white to move, "
+                + "develop knights and bishops, fight for the center and castle (stub)", text);
     }
 
     @Test

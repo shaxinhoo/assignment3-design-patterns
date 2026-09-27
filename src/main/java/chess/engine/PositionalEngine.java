@@ -5,7 +5,7 @@ import chess.model.Position;
 
 public class PositionalEngine implements ChessEngine {
 
-    private static final String NAME = "Positional";
+    private static final String NAME = "positional";
     private static final int MAX_DEPTH = 8;
     private static final int CENTER_BONUS = 20;
     private static final int DEVELOPMENT_BONUS = 15;
@@ -27,7 +27,7 @@ public class PositionalEngine implements ChessEngine {
             throw new InvalidPositionException(InvalidPositionException.KINGS_MISSING);
         }
         if (depth > MAX_DEPTH) {
-            throw new EngineTimeoutException("the engine ran out of time at depth " + depth);
+            throw new EngineTimeoutException("out of time at depth " + depth);
         }
         int score = PieceValues.balance(position) + centerControl(position) + development(position);
         return new Evaluation(score, NAME);

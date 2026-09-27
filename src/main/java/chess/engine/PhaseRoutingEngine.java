@@ -9,14 +9,14 @@ import java.util.Map;
 
 public class PhaseRoutingEngine implements ChessEngine {
 
-    private static final String NAME = "Phase router";
+    private static final String NAME = "phase router";
 
     private final Map<GamePhase, ChessEngine> engines;
 
     public PhaseRoutingEngine(Map<GamePhase, ChessEngine> engines) {
         for (GamePhase phase : GamePhase.values()) {
             if (engines.get(phase) == null) {
-                throw new IllegalArgumentException("No engine for phase " + phase);
+                throw new IllegalArgumentException("no engine for phase " + phase);
             }
         }
         this.engines = Collections.unmodifiableMap(new EnumMap<>(engines));

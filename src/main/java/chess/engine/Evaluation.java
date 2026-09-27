@@ -16,9 +16,9 @@ public record Evaluation(int centipawns, String engineName) {
     public String verdict() {
         int size = Math.abs(centipawns);
         if (size < EQUAL_LIMIT) {
-            return "the position is equal";
+            return "position is equal";
         }
-        String side = centipawns > 0 ? "White" : "Black";
+        String side = centipawns > 0 ? "white" : "black";
         return size < WINNING_LIMIT ? side + " is slightly better" : side + " is winning";
     }
 

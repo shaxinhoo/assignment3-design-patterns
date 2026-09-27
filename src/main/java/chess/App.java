@@ -42,15 +42,15 @@ public class App {
     }
 
     private static void analyze(String fen, List<PositionReport> reports) {
-        System.out.println("Position: " + fen);
+        System.out.println("position: " + fen);
         try {
             Position position = Position.fromFen(fen);
-            System.out.println("  Phase: " + position.phase());
+            System.out.println("  phase: " + position.phase().name().toLowerCase());
             for (PositionReport report : reports) {
                 System.out.println("  " + report.build(position));
             }
         } catch (EngineException | IllegalArgumentException e) {
-            System.out.println("  Cannot analyze: " + e.getMessage());
+            System.out.println("  cannot analyze: " + e.getMessage());
         }
         System.out.println();
     }

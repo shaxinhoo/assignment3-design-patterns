@@ -5,7 +5,7 @@ import chess.model.Position;
 
 public class MaterialEngine implements ChessEngine {
 
-    private static final String NAME = "Material";
+    private static final String NAME = "material";
 
     @Override
     public String name() {

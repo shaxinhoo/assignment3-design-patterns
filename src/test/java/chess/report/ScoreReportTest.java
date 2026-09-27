@@ -13,11 +13,11 @@ class ScoreReportTest {
 
     @Test
     void delegatesToEngineAndFormatsTheScore() {
-        StubEngine engine = StubEngine.returning("Stub", 150);
+        StubEngine engine = StubEngine.returning("stub", 150);
 
         String text = new ScoreReport(engine).build(Positions.START);
 
-        assertEquals("Score +1.50, White is slightly better [Stub]", text);
+        assertEquals("score: +1.50, white is slightly better (stub)", text);
         assertEquals(1, engine.calls());
         assertSame(Positions.START, engine.lastPosition());
         assertEquals(ScoreReport.DEPTH, engine.lastDepth());
@@ -25,11 +25,11 @@ class ScoreReportTest {
 
     @Test
     void showsBlackAdvantageWithMinusSign() {
-        StubEngine engine = StubEngine.returning("Stub", -30);
+        StubEngine engine = StubEngine.returning("stub", -30);
 
         String text = new ScoreReport(engine).build(Positions.START);
 
-        assertEquals("Score -0.30, the position is equal [Stub]", text);
+        assertEquals("score: -0.30, position is equal (stub)", text);
     }
 
     @Test
